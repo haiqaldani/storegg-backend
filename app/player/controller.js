@@ -63,7 +63,7 @@ module.exports = {
       const { accountUser, name, nominal, voucher, payment, bank } = req.body;
 
       const res_voucher = await Voucher.findOne({ _id: voucher })
-        .select("name caegory _id thumbnail user")
+        .select("name category _id thumbnail user")
         .populate("category")
         .populate("user");
 
@@ -85,13 +85,11 @@ module.exports = {
       const res_bank = await Bank.findOne({ _id: bank });
 
       if (!res_bank)
-        return res.status(404).json({ message: "payment tidak ditemukan." });
+        return res.status(404).json({ message: "bank tidak ditemukan." });
 
       let tax = (10 / 100) * res_nominal._doc.price;
       let value = res_nominal._doc.price - tax;
 
-      console.log("res_payment >>");
-      console.log(res_payment._doc);
       const payload = {
         historyVoucherTopup: {
           gameName: res_voucher._doc.name,
@@ -109,7 +107,6 @@ module.exports = {
           bankName: res_bank._doc.bankName,
           noRekening: res_bank._doc.noRekening,
         },
-
         name: name,
         accountUser: accountUser,
         tax: tax,
@@ -132,7 +129,9 @@ module.exports = {
         data: transaction,
       });
     } catch (err) {
-      res.status(500).json({ message: err.message || `Internal server error` });
+      res
+        .status(500)
+        .json({ message: err.message || "Internal server error!" });
     }
   },
 

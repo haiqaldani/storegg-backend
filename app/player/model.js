@@ -36,7 +36,7 @@ let playerSchema = mongoose.Schema({
     enum: ['Y', 'N'],
     default: 'Y'
   },
-  avatar: {type : String},
+  avatar: {type : String, default : 'image-profile.png'},
   fileName : {type : String},
   phoneNumber: {
     type: String,

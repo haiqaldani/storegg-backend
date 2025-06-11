@@ -67,4 +67,4 @@ playerSchema.pre('save', function (next){
   next()
 })
 
-module.exports = mongoose.model('Player', playerSchema, 'users')
+module.exports = mongoose.model('Player', playerSchema)

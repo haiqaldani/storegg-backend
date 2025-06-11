@@ -153,9 +153,41 @@ module.exports = {
           ...criteria,
           player: req.player._id,
         };
-      }
+      }      const history = await Transaction.find(criteria)
+        .populate('category')
+        .populate({
+          path: 'user',
+          select: '_id name phoneNumber'
+        });
 
-      const history = await Transaction.find(criteria);
+      // Get all unique voucher names from transactions
+      const voucherNames = [...new Set(history.map(item => item.historyVoucherTopup?.gameName).filter(Boolean))];
+      
+      // Get current voucher data
+      const vouchers = await Voucher.find({
+        name: { $in: voucherNames }
+      }).select('name thumbnail category');
+
+      // Map vouchers by name for quick lookup
+      const voucherMap = vouchers.reduce((acc, curr) => {
+        acc[curr.name] = curr;
+        return acc;
+      }, {});
+
+      // Map history with current thumbnails
+      const mappedHistory = history.map(item => {
+        const currentVoucher = voucherMap[item.historyVoucherTopup?.gameName];
+        if (currentVoucher && item.category?._id.toString() === currentVoucher.category.toString()) {
+          return {
+            ...item._doc,
+            historyVoucherTopup: {
+              ...item.historyVoucherTopup,
+              thumbnail: currentVoucher.thumbnail
+            }
+          };
+        }
+        return item._doc;
+      });
 
       let total = await Transaction.aggregate([
         { $match: criteria },
@@ -168,7 +200,7 @@ module.exports = {
       ]);
 
       res.status(200).json({
-        data: history,
+        data: mappedHistory,
         total: total.length ? total[0].value : 0,
       });
     } catch (err) {

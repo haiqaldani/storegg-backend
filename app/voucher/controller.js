@@ -68,7 +68,7 @@ module.exports = {
               name,
               category,
               nominals,
-              thumbnial: filename
+              thumbnail: filename
             })
 
             await voucher.save();
@@ -150,7 +150,7 @@ module.exports = {
 
             const voucher = await Voucher.findOne({_id: id})
 
-            let currentImage = `${config.rootPath}/public/uploads/${voucher.thumbnial}`;
+            let currentImage = `${config.rootPath}/public/uploads/${voucher.thumbnail}`;
             if(fs.existsSync(currentImage)){
               fs.unlinkSync(currentImage)
             }
@@ -161,7 +161,7 @@ module.exports = {
               name,
               category,
               nominals,
-              thumbnial: filename
+              thumbnail: filename
             })
             
 
@@ -206,7 +206,7 @@ module.exports = {
         _id: id
       });
 
-      let currentImage = `${config.rootPath}/public/uploads/${voucher.thumbnial}`;
+      let currentImage = `${config.rootPath}/public/uploads/${voucher.thumbnail}`;
       if(fs.existsSync(currentImage)){
         fs.unlinkSync(currentImage)
       }

@@ -198,7 +198,7 @@ module.exports = {
         {
           $group: {
             _id: "$category",
-            valeu: { $sum: "$value" },
+            value: { $sum: "$value" },
           },
         },
       ]);
@@ -214,10 +214,37 @@ module.exports = {
       });
 
       const history = await Transaction.find({ player: req.player._id })
-        .populate("category")
+        .populate('category')
+        .populate({
+          path: 'user',
+          select: '_id name phoneNumber'
+        })
         .sort({ updatedAt: -1 });
 
-      res.status(200).json({ data: history, count: count });
+      // Get all unique voucher IDs from transactions
+      const voucherIds = [...new Set(history.map(item => item.historyVoucherTopup?.gameName).filter(Boolean))];
+      
+      // Get current voucher data
+      const vouchers = await Voucher.find({
+        name: { $in: voucherIds }
+      }).select('name thumbnail');
+
+      // Create a map for quick lookup
+      const voucherMap = vouchers.reduce((acc, curr) => {
+        acc[curr.name] = curr.thumbnail;
+        return acc;
+      }, {});
+
+      // Map the data with current thumbnails
+      const mappedHistory = history.map(item => ({
+        ...item._doc,
+        thumbnail: voucherMap[item.historyVoucherTopup?.gameName] || item.historyVoucherTopup?.thumbnail
+      }));
+
+      res.status(200).json({ 
+        data: mappedHistory, 
+        count: count 
+      });
     } catch (err) {
       res.status(500).json({ message: err.message || `Internal server error` });
     }

@@ -4,12 +4,23 @@ const Player = require('../player/model')
 
 module.exports = {
   isLoginAdmin: (req, res, next) => {
-    if (req.session.user === null || req.session.user === undefined) {
-      req.flash('alertMessage', `Mohon maaf session anda telah habis silahkan login kembali`)
-      req.flash('alertStatus', 'danger')
-      res.redirect('/')
-    } else {
+    try {
+      if (!req.session) {
+        throw new Error('Session not initialized');
+      }
+      
+      if (!req.session.user) {
+        req.flash('alertMessage', `Mohon maaf session anda telah habis silahkan login kembali`)
+        req.flash('alertStatus', 'danger')
+        return res.redirect('/')
+      }
+      
       next()
+    } catch (err) {
+      console.error('Session Error:', err);
+      req.flash('alertMessage', `Error: ${err.message}`)
+      req.flash('alertStatus', 'danger')
+      return res.redirect('/')
     }
   },
 

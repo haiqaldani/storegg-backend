@@ -21,19 +21,29 @@ const sessionMiddleware = require("./app/middleware/sessionMiddleware");
 
 const app = express();
 const URL = `/api/v1`;
-app.use(cors());
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-app.use(sessionMiddleware);
-app.use(flash());
-app.use(methodOverride("_method"));
+// Middleware order is important
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// Configure CORS before session
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Session must be after CORS and before routes
+app.use(sessionMiddleware);
+app.use(flash());
+app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   "/adminlte",
